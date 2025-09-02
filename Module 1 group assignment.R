@@ -12,7 +12,7 @@ install.packages ("dplyr")
 library (dplyr)
 set.seed (1900)
 boots <- NULL
-for(i in 1:1000) {
+for(i in 1:10000) {
   meanApps <- apps%>%sample(size = 1000,replace=TRUE)%>%mean()
   boots <- c(boots,meanApps)
 }
@@ -28,7 +28,7 @@ quantile(boots, c(.1,.9))
 #random seed 1
 set.seed (2016)
 boots <- NULL
-for (i in 1:1000) {
+for (i in 1:10000) {
   meanApps <-apps%>%sample(size = 1000,replace=TRUE)%>%mean()
   boots <- c(boots,meanApps)
 }
@@ -40,7 +40,7 @@ quantile(boots, c(.1,.9))
 #random seed 2
 set.seed (2019)
 boots <- NULL
-for (i in 1:1000) {
+for (i in 1:10000) {
   meanApps <-apps%>%sample(size = 1000,replace=TRUE)%>%mean()
   boots <- c(boots,meanApps)
 }
@@ -52,7 +52,7 @@ quantile(boots, c(.1,.9))
 #random seed 3
 set.seed (2020)
 boots <- NULL
-for (i in 1:1000) {
+for (i in 1:10000) {
   meanApps <-apps%>%sample(size = 1000,replace=TRUE)%>%mean()
   boots <- c(boots,meanApps)
 }
@@ -63,3 +63,38 @@ quantile(boots, c(.1,.9))
 
 #Problem 2 - for 5000 samples
 
+#random seed 1
+set.seed (2016)
+boots <- NULL
+for (i in 1:10000) {
+  meanApps <-apps%>%sample(size = 5000,replace=TRUE)%>%mean()
+  boots <- c(boots,meanApps)
+}
+boots%>%hist(main="Sample Distribution for Mean Apps - Seed 1")
+
+# now creating the intervals for 80% confidence interval for seed 1
+quantile(boots, c(.1,.9))
+
+#random seed 2
+set.seed (2019)
+boots <- NULL
+for (i in 1:10000) {
+  meanApps <-apps%>%sample(size = 5000,replace=TRUE)%>%mean()
+  boots <- c(boots,meanApps)
+}
+boots%>%hist(main="Sample Distribution for Mean Apps - Seed 2")
+
+# now creating the intervals for 80% confidence interval for seed 2
+quantile(boots, c(.1,.9))
+
+#random seed 3
+set.seed (2020)
+boots <- NULL
+for (i in 1:10000) {
+  meanApps <-apps%>%sample(size = 5000,replace=TRUE)%>%mean()
+  boots <- c(boots,meanApps)
+}
+boots%>%hist(main="Sample Distribution for Mean Apps - Seed 3")
+
+# now creating the intervals for 80% confidence interval for seed 3
+quantile(boots, c(.1,.9))
