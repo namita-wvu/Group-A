@@ -1,0 +1,136 @@
+---
+title: "HW1"
+author: "Jordan"
+date: "2025-09-01"
+output: pdf_document
+---
+
+Q1
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+ install.packages('ISLR')
+ install.packages('dplyr')
+ library(ISLR)
+ library(dplyr)
+
+apps<-College$Apps
+bootsApp <-NULL
+set.seed(1900)
+for(i in 1:1000){
+my_samp=apps%>%sample(.,length(.),replace=TRUE)%>%mean()
+bootsApp<- c(bootsApp,my_samp)
+ }
+ hist(bootsApp)
+ quantile(bootsApp, c(0.1,0.9))
+# 2835.596 - 3186.701
+```
+
+ 
+ Q2
+ library(ISLR)
+ library(dplyr)
+apps<-College$Apps
+bootsApp <-NULL
+set.seed(0)
+Start <- Sys.time()
+for(j in 1:1000){
+my_samp=apps%>%sample(.,length(.),replace=TRUE)%>%mean()
+bootsApp<- c(bootsApp,my_samp)}
+ hist(bootsApp)
+ quantile(bootsApp, c(0.1,0.9))
+ Finish <- Sys.time()
+ Finish - Start
+ ## 2837.151 - 3187.078
+ ## time difference 0.04484105 secs
+ 
+ 
+ library(ISLR)
+ library(dplyr)
+apps<-College$Apps
+bootsApp <-NULL
+set.seed(100)
+Start <- Sys.time()
+for(j in 1:1000){
+my_samp=apps%>%sample(.,length(.),replace=TRUE)%>%mean()
+bootsApp<- c(bootsApp,my_samp)}
+ hist(bootsApp)
+ quantile(bootsApp, c(0.1,0.9))
+ Finish <- Sys.time()
+ Finish - Start
+ ## 2825.958 - 3174.210
+ ## time difference 0.0440309 secs
+ 
+  library(ISLR)
+ library(dplyr)
+apps<-College$Apps
+bootsApp <-NULL
+set.seed(0)
+Start <- Sys.time()
+for(j in 1:5000){
+my_samp=apps%>%sample(.,length(.),replace=TRUE)%>%mean()
+bootsApp<- c(bootsApp,my_samp)}
+ hist(bootsApp)
+ quantile(bootsApp, c(0.1,0.9))
+ Finish <- Sys.time()
+ Finish - Start
+ ## 2828.207 - 3180.767
+  ## time difference 0.1346271 secs
+  
+   library(ISLR)
+ library(dplyr)
+apps<-College$Apps
+bootsApp <-NULL
+set.seed(100)
+Start <- Sys.time()
+for(j in 1:5000){
+my_samp=apps%>%sample(.,length(.),replace=TRUE)%>%mean()
+bootsApp<- c(bootsApp,my_samp)}
+ hist(bootsApp)
+ quantile(bootsApp, c(0.1,0.9))
+ Finish <- Sys.time()
+ Finish - Start
+ ## 2826.857 - 3180.644
+ ## time difference 0.141171 secs
+
+ library(ISLR)
+ library(dplyr)
+apps<-College$Apps
+bootsApp <-NULL
+set.seed(1900)
+Start <- Sys.time()
+for(j in 1:5000){
+my_samp=apps%>%sample(.,length(.),replace=TRUE)%>%mean()
+bootsApp<- c(bootsApp,my_samp)}
+ hist(bootsApp)
+ quantile(bootsApp, c(0.1,0.9))
+ Finish <- Sys.time()
+ Finish - Start
+ ## 2824.933 - 3182.623
+  ## time difference 0.1357791 secs
+
+
+
+
+
+Q3
+## null hypoth : private & public = 0
+## alt hypoth : public > private
+pub <- tapply(College$Apps,College$Private,mean)
+pub
+## no = 5729 ; yes = 1977.929
+my_stat <- pub[1]-pub[2]
+my_stat
+## yes = -3751.991
+set.seed(90)
+samp_d<-NULL
+for(i in 1:10000){
+NewDat <- data.frame (a=College$Apps, priv=sample(College$Private,777))
+my_stat_boot <-tapply(NewDat$a,NewDat$priv,mean)
+samp_d <- c(samp_d,my_stat_boot[1]-my_stat_boot[2])
+}
+hist(samp_d,xlim=c(-1000,1000))
+sum(samp_d >= my_stat)/10000
+## = 0
+## reject the null
+
+
