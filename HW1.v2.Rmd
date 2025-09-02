@@ -1,0 +1,151 @@
+---
+title: "HW1"
+author: "Jordan, Ethan, Namita, Valentina"
+date: "2025-09-01"
+output: html_document
+---
+
+# Q1
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+if (!require(ISLR)) install.packages("ISLR", dependencies = TRUE)
+if (!require(dplyr)) install.packages("dplyr", dependencies = TRUE)
+library(ISLR)
+library(dplyr)
+```
+
+```{r Q1}
+apps <- College$Apps
+bootsApp <- NULL
+set.seed(1900)
+for (i in 1:1000) {
+  my_samp <- apps %>% sample(length(.), replace = TRUE) %>% mean()
+  bootsApp <- c(bootsApp, my_samp)
+}
+hist(bootsApp, main = "Bootstrap Means of Apps (Boot = 1000, Seed = 1900)", xlab = "Mean(Apps)")
+quantile(bootsApp, c(0.1, 0.9))
+```
+**Takeaways From Question 1**  
+Interpretation: We are 80% confident that the true mean number of college applications per school lies between those bounds.  
+
+Implementation choice: We store only the mean from each bootstrap sample because its the most memory-efficient method for this task.It is also what we were most comfortable with due to us going over it in the notes.
+
+
+# Q2
+
+## Seed 0, B = 1000
+
+```{r Q2a}
+apps <- College$Apps
+bootsApp <- NULL
+set.seed(0)
+Start <- Sys.time()
+for (i in 1:1000) {
+  my_samp <- apps %>% sample(length(.), replace = TRUE) %>% mean()
+  bootsApp <- c(bootsApp, my_samp)
+}
+hist(bootsApp, main = "Bootstrap Means (Boot = 1000, Seed = 0)", xlab = "Mean(Apps)")
+quantile(bootsApp, c(0.1, 0.9))
+Finish <- Sys.time()
+Finish - Start
+```
+
+## Seed 100, B = 1000
+
+```{r Q2b}
+apps <- College$Apps
+bootsApp <- NULL
+set.seed(100)
+Start <- Sys.time()
+for (i in 1:1000) {
+  my_samp <- apps %>% sample(length(.), replace = TRUE) %>% mean()
+  bootsApp <- c(bootsApp, my_samp)
+}
+hist(bootsApp, main = "Bootstrap Means (Boot = 1000, Seed = 100)", xlab = "Mean(Apps)")
+quantile(bootsApp, c(0.1, 0.9))
+Finish <- Sys.time()
+Finish - Start
+```
+
+## Seed 0, B = 5000
+
+```{r Q2c}
+apps <- College$Apps
+bootsApp <- NULL
+set.seed(0)
+Start <- Sys.time()
+for (i in 1:5000) {
+  my_samp <- apps %>% sample(length(.), replace = TRUE) %>% mean()
+  bootsApp <- c(bootsApp, my_samp)
+}
+hist(bootsApp, main = "Bootstrap Means (Boot = 5000, Seed = 0)", xlab = "Mean(Apps)")
+quantile(bootsApp, c(0.1, 0.9))
+Finish <- Sys.time()
+Finish - Start
+```
+
+## Seed 100, B = 5000
+
+```{r Q2d}
+apps <- College$Apps
+bootsApp <- NULL
+set.seed(100)
+Start <- Sys.time()
+for (i in 1:5000) {
+  my_samp <- apps %>% sample(length(.), replace = TRUE) %>% mean()
+  bootsApp <- c(bootsApp, my_samp)
+}
+hist(bootsApp, main = "Bootstrap Means (Boot = 5000, Seed = 100)", xlab = "Mean(Apps)")
+quantile(bootsApp, c(0.1, 0.9))
+Finish <- Sys.time()
+Finish - Start
+```
+
+## Seed 1900, B = 5000
+
+```{r Q2e}
+apps <- College$Apps
+bootsApp <- NULL
+set.seed(1900)
+Start <- Sys.time()
+for (i in 1:5000) {
+  my_samp <- apps %>% sample(length(.), replace = TRUE) %>% mean()
+  bootsApp <- c(bootsApp, my_samp)
+}
+hist(bootsApp, main = "Bootstrap Means (Boot = 5000, Seed = 1900)", xlab = "Mean(Apps)")
+quantile(bootsApp, c(0.1, 0.9))
+Finish <- Sys.time()
+Finish - Start
+```
+
+# Q3
+
+```{r Q3}
+# Hypotheses:
+# H0: mean(Apps | Private == "No") - mean(Apps | Private == "Yes") = 0
+# H1: mean(Apps | Private == "No") - mean(Apps | Private == "Yes") > 0
+
+# Group means
+pub <- tapply(College$Apps, College$Private, mean)
+pub
+
+# Observed statistic
+my_stat <- pub["No"] - pub["Yes"]
+my_stat
+
+# Permutation test
+set.seed(90)
+samp_d <- NULL
+for (i in 1:10000) {
+  NewDat <- data.frame(a = College$Apps,
+                       priv = sample(College$Private, length(College$Private)))
+  my_stat_boot <- tapply(NewDat$a, NewDat$priv, mean)
+  samp_d <- c(samp_d, my_stat_boot["No"] - my_stat_boot["Yes"])
+}
+
+hist(samp_d, xlim = c(-1000, 1000),
+     main = "Permutation Distribution of Mean Difference (No - Yes)",
+     xlab = "Difference in means")
+mean(samp_d >= my_stat)
+```
