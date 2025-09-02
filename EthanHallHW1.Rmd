@@ -1,0 +1,192 @@
+---
+title: "Homework 1"
+author: "Ethan Hall"
+date: "2025-09-02"
+output: html_document
+---
+
+```{r libs, include=FALSE}
+
+library(ISLR)
+library(dplyr)
+```
+
+## Question 1
+
+```{r q1, echo=TRUE}
+startTime <- Sys.time()
+boots <- NULL
+set.seed(125)
+
+for (i in 1:1000) {
+  appsAverage <- College$Apps %>% sample(size = length(.), replace = TRUE) %>% mean()
+  boots <- c(boots, appsAverage)
+}
+
+ci80_q1 <- quantile(boots, c(0.2, 0.8))
+print(ci80_q1)
+
+endTime <- Sys.time()
+print(endTime - startTime)
+```
+
+**Takeaways From Question 1**  
+Result (from my run): `r paste0("[", round(ci80_q1[1]), ", ", round(ci80_q1[2]), "]")`  
+
+Interpretation: I am 80% confident that the true mean number of college applications per school lies between those bounds.  
+
+Implementation choice: I store only the mean from each bootstrap sample because its the most memory-efficient method for this task.It is also what I was most comfortable with due to us going over it in the notes.
+
+
+
+---
+
+## Question 2
+
+```{r q2_1000_seed125, echo=TRUE}
+startTime <- Sys.time()
+boots <- NULL
+set.seed(125)
+
+for (i in 1:1000) {
+  appsAverage <- College$Apps %>% sample(size = length(.), replace = TRUE) %>% mean()
+  boots <- c(boots, appsAverage)
+}
+
+ci80_1000_125 <- quantile(boots, c(0.2, 0.8))
+print(ci80_1000_125)
+
+endTime <- Sys.time()
+print(endTime - startTime)
+```
+
+```{r q2_5000_seed125, echo=TRUE}
+startTime <- Sys.time()
+boots <- NULL
+set.seed(125)
+
+for (i in 1:5000) {
+  appsAverage <- College$Apps %>% sample(size = length(.), replace = TRUE) %>% mean()
+  boots <- c(boots, appsAverage)
+}
+
+ci80_5000_125 <- quantile(boots, c(0.2, 0.8))
+print(ci80_5000_125)
+
+endTime <- Sys.time()
+print(endTime - startTime)
+```
+**Comments**
+You can see that the time it took to run the Bootstrap of 5000 iterations took about .18 seconds longer than the Boostrap of 1000 iterations took to run.
+
+
+```{r q2_1000_seed413, echo=TRUE}
+startTime <- Sys.time()
+boots <- NULL
+set.seed(413)
+
+for (i in 1:1000) {
+  appsAverage <- College$Apps %>% sample(size = length(.), replace = TRUE) %>% mean()
+  boots <- c(boots, appsAverage)
+}
+
+ci80_1000_413 <- quantile(boots, c(0.2, 0.8))
+print(ci80_1000_413)
+
+endTime <- Sys.time()
+print(endTime - startTime)
+```
+
+```{r q2_5000_seed413, echo=TRUE}
+startTime <- Sys.time()
+boots <- NULL
+set.seed(413)
+
+for (i in 1:5000) {
+  appsAverage <- College$Apps %>% sample(size = length(.), replace = TRUE) %>% mean()
+  boots <- c(boots, appsAverage)
+}
+
+ci80_5000_413 <- quantile(boots, c(0.2, 0.8))
+print(ci80_5000_413)
+
+endTime <- Sys.time()
+print(endTime - startTime)
+```
+**Comments**
+You can see that the time it took to run the Bootstrap of 5000 iterations was about double of the time it took for the Boostrap of 1000 iterations to run.
+
+
+
+```{r q2_1000_seed751, echo=TRUE}
+startTime <- Sys.time()
+boots <- NULL
+set.seed(751)
+
+for (i in 1:1000) {
+  appsAverage <- College$Apps %>% sample(size = length(.), replace = TRUE) %>% mean()
+  boots <- c(boots, appsAverage)
+}
+
+ci80_1000_751 <- quantile(boots, c(0.2, 0.8))
+print(ci80_1000_751)
+
+endTime <- Sys.time()
+print(endTime - startTime)
+```
+
+```{r q2_5000_seed751, echo=TRUE}
+startTime <- Sys.time()
+boots <- NULL
+set.seed(751)
+
+for (i in 1:5000) {
+  appsAverage <- College$Apps %>% sample(size = length(.), replace = TRUE) %>% mean()
+  boots <- c(boots, appsAverage)
+}
+
+ci80_5000_751 <- quantile(boots, c(0.2, 0.8))
+print(ci80_5000_751)
+
+endTime <- Sys.time()
+print(endTime - startTime)
+```
+**Comments**
+You can see that the time it took to run the Bootstrap of 5000 iterations took about .17 seconds longer than the Boostrap of 1000 iterations took to run.
+
+
+---
+## Question 3
+```{r q3, echo=TRUE}
+# Observed means and difference (Public "No" minus Private "Yes")
+origMeanPubPriv <- tapply(College$Apps, College$Private, mean)
+print(origMeanPubPriv)
+
+pubMinusPriv <- origMeanPubPriv["No"] - origMeanPubPriv["Yes"]
+print(pubMinusPriv)
+
+# Randomization (shuffle labels; keep sizes the same)
+set.seed(171)
+samp_d <- NULL
+n <- length(College$Private)
+
+for (i in 1:10000) {
+  PrivateVsPublic <- data.frame(
+    a   = College$Apps,
+    priv = sample(College$Private, n, replace = FALSE)  # permute labels
+  )
+  my_stat_boot <- tapply(PrivateVsPublic$a, PrivateVsPublic$priv, mean)
+  samp_d <- c(samp_d, my_stat_boot["No"] - my_stat_boot["Yes"])        # Public - Private
+}
+
+# Histogram + observed line
+hist(samp_d, xlim = c(-1000, 1000),
+     main = "Randomization Dist: Public - Private (mean Apps)",
+     xlab = "Difference in means")
+abline(v = pubMinusPriv, lwd = 2)
+
+# One-sided p-value for H1: Public > Private
+p_val <- mean(samp_d >= pubMinusPriv)
+print(p_val)
+```
+
