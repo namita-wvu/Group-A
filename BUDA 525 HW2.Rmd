@@ -1,0 +1,120 @@
+---
+title: "BUDA 525 HW 2"
+author: "Valentina Tippy"
+date: "2025-09-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(ISLR)
+library(dplyr)
+library(alr4)
+library(car)
+```
+
+
+# Q1
+
+```{r Q1}
+library(alr4)
+data(UBSprices)
+##Scatter Plot, Simple Linear Regression
+plot(UBSprices$bigmac2003, UBSprices$bigmac2009,
+     xlab = "Big Mac Price 2003",
+     ylab = "Big Mac Price 2009",
+     main = "Big Mac 2009 vs 2003")
+## Scatter Plot, Log Linear Regression
+  plot(log(UBSprices$bigmac2003), log(UBSprices$bigmac2009),
+     xlab = "log(Big Mac Price 2003)",
+     ylab = "log(Big Mac Price 2009)",
+     main = "Log Plot: Big Mac Prices")
+##Fit Linear Model
+model <- lm(log(bigmac2009) ~ log(bigmac2003), data = UBSprices)
+summary(model)
+```
+
+1. Simple Regression (Graph 1) is not an appropriate choice for the first model since most of the data is confined to <50 with a few points over 50 and an outliar on the high end of 150. Graph 2 is better suited since it has a more linear layout.
+
+2. The regression Coefficients for Graph 2 (Log) tells us that the intercept is .64031, we can use this in a reverse log function (exp) to find the price of what a Big Mac would be in 2009. example: exp(.64031)=1.896 ~ 1.9 
+
+3. The slope is .80293, which means the price increase was less than predicted. Perfect slope is 1, we got .80 this means what increased by 1% in 2003 increased by .80% in 2009.
+
+
+# Q2
+
+```{r Q2}
+
+library(alr4)
+data("oldfaith")
+names(oldfaith)
+model2 <- lm(Interval ~ Duration, data = oldfaith)
+summary(model2)
+newdata<- data.frame(Duration=250)
+predict(model2, newdata, interval = "confidence", level = 0.95)
+predict(model2, newdata, interval = "prediction", level = 0.95)
+```
+With a 95% confidence interval, we can assume that the next eruption will be between ~77 minutes and ~79 minutes 
+
+With a prediction interval, we can assume the next eruption will be between ~66 minutes and ~90 minutes 
+
+This is after the occurrence of the last erruption that lasted 250 seconds.  
+
+
+# Q3
+
+```{r Q3}
+library(alr4)
+data(UN11)
+names(UN11)
+Model3 <-lm(fertility~log(ppgdp)+pctUrban, data=UN11)
+summary(Model3)
+avPlots(Model3)
+```
+
+With regards to the regression coefficients, the data they provide say that for every unit increase (1) of GDP the fertility deceases 18.7% (1-(exp(-.207)))
+
+Given the added variable plot, it shows that wealth tends to have more of an effect on fertility than urbanization of the country. This is shown by the slope of the respective graphs as the slope for GDP is -.207 and Urban is about 0 (-.00042656), which means there isn't really a relationship between Urban and fertility. 
+
+# Q4
+
+Model Q4a (2 PREDICTORS)
+
+```{r Q4a}
+library(car)
+data("Transact")
+names(Transact)
+modelq4a <- lm(time ~ t1 + t2, data = Transact)
+summary(modelq4a)
+```
+
+Model Q4b (Average and Difference)
+```{r Q4b}
+library(car)
+data("Transact")
+modelq4b <- lm(time~ I((t1+t2)/2)+I(t1-t2), data=Transact)
+summary(modelq4b)
+```
+
+Model Q4c (T2 and Difference)
+
+```{r Q4c}
+library(car)
+data("Transact")
+modelq4c <- lm(time~ t2 +I(t1-t2), data=Transact)
+summary(modelq4c)
+```
+
+Model q4d (t1,t2, average, difference)
+
+```{r Q4d}
+library(car)
+data("Transact")
+modelq4d <- lm(time~ t1+t2+I((t1+t2)/2)+I(t1-t2), data=Transact)
+summary(modelq4d)
+```
+
+There are similarities in the first three model. t1 is equal to difference in model 3. t2 in model 3 is equal to the average in model 2. 
+
+Individually the first three models run perfect, however the issue starts when you combine all of them into one summary (Modelq4d). When you run the last model, it gives you NA for Average (I((t1+t2)/2)) and Difference (I(t1-t2)). The reason for this is because those two functions are deemed "redundant" by the program, meaning they give you the same answers as the first two inputs.
+
+Out of the four models I am most likely to chose the first one since it is straight forward with the data. However, the answer could change depending on what our end goal is with the data. 
