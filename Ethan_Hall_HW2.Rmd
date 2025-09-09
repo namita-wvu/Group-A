@@ -1,0 +1,125 @@
+---
+title: "Homework 2"
+author: "Ethan Hall"
+date: "2025-09-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+# I know you said you liked it last time lol.
+
+if (!require(alr4)) install.packages("alr4", dependencies = TRUE); library(alr4)
+if (!require(dplyr)) install.packages("dplyr", dependencies = TRUE); library(dplyr)
+if (!require(car)) install.packages("car", dependencies = TRUE); library(car)
+if (!require(carData)) install.packages("carData", dependencies = TRUE); library(carData)
+```
+
+## Problem 1
+```{r p1-rawplots}
+plot(bigmac2009 ~ bigmac2003, data = UBSprices)
+
+plot(log(bigmac2009) ~ log(bigmac2003), data = UBSprices)
+
+mod1 <- lm(log(bigmac2009) ~ log(bigmac2003), data=UBSprices)
+mod1 %>% summary()
+mod1%>%abline(col=2)
+```
+
+**Comments:**
+The raw plot isn’t good for simple linear regression because the data is heavily clustered at the low-price end, there’s no clear linear spread, and the variance increases with higher prices.The slope of about 0.80 means that a 1% increase in 2003 Big Mac prices corresponds to only a 0.8% increase in 2009 prices, so prices rose but at a slower rate.The very small p-value of < 2e-16 means we reject the null hypothesis that the slope equals zero, which means that there is a statistically significant relationship between 2003 and 2009 prices.
+
+---
+
+## Problem 2
+```{r p2-model}
+help(oldfaith)
+plot(Interval ~ Duration, data = oldfaith)
+
+mod2 <- lm(Interval ~ Duration, data = oldfaith)
+abline(mod2)
+
+new <- data.frame(Duration = 250)
+ci  <- mod2%>%predict(newdata = new, interval = "confidence", level = 0.95,se.fit = TRUE)
+pi  <- mod2%>%predict(newdata = new, interval = "prediction", level = 0.95,se.fit=TRUE) # is the last condition neccesary? Not sure if I need to know the residal for this
+ci
+pi
+```
+**Comments:**
+If the last Old Faithful eruption lasted a little over 4 minutes (250 seconds), the next eruption will probably happen in about 78 minutes. Typically the wait is almost always between 77 and 79 minutes. But since geysers are unpredictable, a single eruption could come as soon as about 66 minutes or as late as about 90 minutes.
+
+---
+
+## Problem 3
+```{r p3-models}
+mod3 <- lm(fertility ~ log(ppgdp) + pctUrban, data = UN11)
+summary(mod3)
+
+avPlots(mod3)
+```
+
+**Comments**
+The regression shows that fertility is strongly related to a country’s income. The negative slope for log(ppgdp) means that as GDP per person increases, fertility goes down. Wealthier countries tend to have fewer children per woman. The effect of pct urban population is very small and not significant, so urbanization doesn’t seem to matter once income is considered. The model explains about half of the variation in fertility across countries.
+
+The added-variable plots back this up, the plot for log(ppgdp) shows a clear downward trend, while the plot for percent urban is basically flat. When the line is flat it signifies that there is no relationship. This means income is the real driver of fertility differences, not whether people live in cities or rural areas.
+
+---
+
+## Problem 4
+```{r p4-models}
+m1 <- lm(time ~ t1 + t2, data = Transact)
+m2 <- lm(time ~ I((t1 + t2)/2) + I(t1 - t2), data = Transact)
+m3 <- lm(time ~ t2 + I(t1 - t2), data = Transact)
+m4 <- lm(time ~ t1 + t2 + I((t1 + t2)/2) + I(t1 - t2), data = Transact)
+
+summaries <- lapply(list(m1 = m1, m2 = m2, m3 = m3, m4 = m4), summary)
+summaries
+```
+**Comments:**
+
+**Similarities:**  
+- All four models have almost the same R^2.  
+- All explain nearly all of the variation in transaction time.  
+- Predictions are very similar across models.  
+
+**Differences:**  
+- Model 1 (t1 + t2): Both predictors are significant, simple, and easy to interpret.  
+- Model 2 (average + difference): Works fine but harder to explain to non-technical people.  
+- Model 3 (t2 + difference): Leaves out t1 directly but still includes its info through the difference term. Less clear.  
+- Model 4 (t1 + t2 + average + difference): Has collinearity, leading to NA coefficients and messy results.  
+
+**Issues:**  
+- Collinearity in Model 4 makes the coefficients unstable and unreliable.  
+- Communication is harder when using average and difference instead of the original variables.  
+
+**Insights:**  
+- Since all models fit equally well, the best choice comes down to clarity and interpretability.  
+- The cleanest takeaway: transaction time depends on both t1 and t2.  
+
+**Best Model:**  
+- Model 1 (t1 + t2) is the best choice.  
+- Same strong fit as the others.  
+- Avoids collinearity problems.  
+- Easiest to explain: Transaction time depends on both t1 and t2.” 
+
+---
+
+## Optional
+```{r p5-optional, eval=FALSE}
+plot(log(fertility) ~ log(ppgdp), data = UN11)
+mod5 <- lm(log(fertility) ~ log(ppgdp), data = UN11)
+mod5%>%abline()
+mod5%>%summary()
+```
+
+**Comments:**
+My null hypothesis is that the slope == 0 which would mean that there is no relationship between income and fertility.
+
+My alternative hypothesis is that slope != 0 meaning that there is a relationship between income and fertility.
+
+Since the p-value is <2e-16, which is much smaller than my 5% significance level i reject the null hypothesis.
+
+Its also pretty clear relationship when looking at the plot,countries with higher PPGDP tend to have fewer children per women. 
+
+**I would love more examples, I am still relying on the notes heavily. Could you provide another real-world example of interpreting regression results to a non-technical audience, like the geyser question? I feel that these would be most beneficial as someone who will most likely be in a business setting where I bring impact in how I communicate technical answers.**
