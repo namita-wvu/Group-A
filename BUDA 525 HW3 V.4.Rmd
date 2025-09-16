@@ -1,0 +1,146 @@
+---
+title: "BUDA 525 HW 3"
+author: "Valentina Tippy"
+date: "2025-09-15"
+output: html_document
+---
+```{r setup, include=FALSE}
+library(alr4)
+library(car)
+```
+
+# Q1 
+
+```{r Q1}
+library(alr4)
+head(jevons)
+plot(Weight~Age,data=jevons)
+plot(SD^2~Age,data=jevons)
+modelwls<-lm(Weight~Age,weights=n/(SD^2),data=jevons)
+summary(modelwls)
+modelorg<-lm(Weight~Age,data=jevons)
+summary(modelorg)
+plot(Weight~Age,data=jevons)
+abline(modelwls)
+abline(modelorg,col=4)
+newdata<- data.frame(Age=1:5)
+predict(modelwls,newdata )
+```
+
+
+1. Use weighted least squares to analyze the data appropriately to define the relationship between weight and age. 
+
+When using the Weighted least squares, this allows us to weigh the results with how many there are per age so we get a more accurate graph/reading. The relationship of weight and age is less variable the younger the coin is. Thus, the older coins  are less emphasized with the weight in the WLS equation since they have a higher variability.
+
+2. Interpret the regression coefficients
+
+The regression Coefficient of the WLS model shows that the standard wight in grams at age 0 (intercept) is 7.9965 grams with the coin losing about -.02376 grams (slope) every 10 years.
+
+3. compare the result to using original least squares (no weights) discuss the differences. 
+
+Given both graphs (WLS and original), visually we can see that the blue line (Original) goes through or is close to each point on our graph and the black line (WLS) goes through about the first three points, but does not touch the last two (4 and 5). This is because WLS is able to provide us more accuracy with those first few points due to their weighted priority rather than each point being given equal weight as it is in the unweighted equation. 
+
+Numerically, WLS has a lower slope, -.0237, than the original slope, -.0253. Given the weight of each point, this means that the WLS model shows that the coins are loosing weight in grams slower than in the original model. Again, this is due to the fact each point is calculated based on the amount of coins in each category rather than one equation across the board.
+
+4. How do your predictions at ages 1-5 relate to the legal minimum for a coin? 
+
+As stated, the legal minimum is 7.9379g. From the WLS model, these are the printed predictions.
+ 
+ .(1) 7.972766 (2) 7.949009 (3) 7.925253 (4)  7.901497 (5) 7.877741 
+
+Given the predictions, we can see that all coins in category 1 and 2 meet the legal limit. However coins in category 3 are most likely to not meet the legal limits with few coins that do (Also supported by the graph where the blac WLS line skims the point). Category 4 and 5 do not meet the legal limit with any coins in this category. Overall, coins older than 2.5 decades, are more likely to fall below the legal weight limit.
+
+
+# Q2
+
+```{r Q2}
+library(alr4)
+head(stopping)
+plot(Distance~Speed, data=stopping)
+modelols<- lm(Distance~Speed, data= stopping)
+abline(modelols, col="blue")
+summary(modelols)
+modelwls2<-lm(Distance~Speed, weights=1/(Speed^2),data=stopping)
+abline(modelwls2,col="red")
+summary(modelwls2)
+modelquad <- lm(Distance ~ Speed + I(Speed^2), data = stopping)
+curve(predict(modelquad, newdata = data.frame(Speed = x)),col = "green", add = TRUE)
+summary(modelquad)
+```
+
+ 1. Interpret the model and present any insights you may have
+ 
+Blue line: OLS    Red line: WLS    Green line: Quadratic
+
+OLS and WLS lines did a good job at capturing the data at the beginning. WLS is able to weigh the points and give less weight to the later points since they have more variability. Though this worked well in problem 1, I feel as it missed the importance of those higher speeds since, towards the and of the scatter plot the data tends to have a curve. I though a quadratic formula would be another good addition to best capture the data. In doing this, you are able to see how the points curve with the green line showing that stopping distance increases faster than speed. 
+
+***I also want to note, I did have to use chatgpt for the curve/predict function. I used the notes for the quadratic code but I was unable how to figure out how to graph it as I kept trying to use abline, plot, and line, none of which worked. 
+
+**input: " Fix this code in simplest terms to be added to a scatter plot
+"> modelquad <- lm(Distance ~ exp(Speed)+I(Speed^2), data = stopping)
+> abline(modelquad, col="green")
+Warning message:
+In abline(modelquad, col = "green") :
+  only using the first two of 3 regression coefficients"
+  
+Output: "Simplified R Code for Graphing a Quadratic Fit
+Load data
+library(alr4)
+data(stopping)
+Plot the data
+plot(Distance ~ Speed, data = stopping,
+     main = "Quadratic Fit: Stopping Distance vs Speed",
+     xlab = "Speed", ylab = "Distance")
+Fit and plot the quadratic model in one go
+modelquad <- lm(Distance ~ Speed + I(Speed^2), data = stopping)
+curve(predict(modelquad, newdata = data.frame(Speed = x)),
+      add = TRUE, col = "green", lwd = 2) "
+      
+I removed lwd as I did not want the line to be thicker than the other two. 
+
+
+# Q3
+
+```{r Q3a}
+library(alr4)
+data(MinnLand)
+names(MinnLand)
+modeldata <- lm(acrePrice ~ . - region - financing, data = MinnLand)
+par(mfrow = c(2, 2))
+plot(modeldata)
+boxCox(modeldata)
+summary(modeldata)
+```
+
+Logic behind BoxCox
+
+This is the original data with the BoxCox model. The Q-Q tends to have a tail pointing upwards (right-tail) which deviates from the suggested linear patter showing it it not normally distributed.
+
+```{r Q3b}
+modeldata2 <- lm(log(acrePrice)~ . - region - financing, data = MinnLand)
+par(mfrow = c(2, 2))
+plot(modeldata2)
+boxCox(modeldata2)
+summary(modeldata2)
+```
+
+Logic behind Log BoxCox
+
+Using a log helps to bring more normailty into the residuals. For this one, we can see that the Q-Q is closer to a straight line than the first one. In addition, the Residuals vs. Fitted plot looks more fitted than in the first graph, The X and Y axis are able to be closer together rather than thousands apart.
+
+```{r Q3c}
+modeldata3 <- lm((acrePrice^0.5) ~ . - region - financing, data = MinnLand)
+par(mfrow = c(2, 2))
+plot(modeldata3)
+boxCox(modeldata3)
+summary(modeldata3)
+```
+
+Logic behind a power transformation (Square root) BoxCox
+
+For this model, I reviewed the notes and wanted to try a power transformation , specifically the square root in order to further help to stabilize the analysis. In this model, the Q-Q residual is back to having a small right tail, but still less than the original model. In addition, the Fitted residual graph looks better than the first, but is still wider than the Log boxCox.
+
+# Conclusion
+
+Overall, I think the Log function gives us the best visuals and data. This is because the data is tighter together(less funneled) and provides us with straighter graphs (specifically Q-Q). having a log function stabilizes this data the most, which provides us with the more reliable results to use in an analysis.
+
