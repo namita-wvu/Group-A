@@ -1,0 +1,100 @@
+---
+title: "HW 4 V.1"
+author: "Valentina Tippy"
+date: "2025-09-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(alr4)
+library(car)
+library(effects)
+```
+
+
+# Q1
+
+```{r Q1}
+data(MinnLand)
+head(MinnLand)
+summary(MinnLand)
+MinnLand$yearF<-as.factor(MinnLand$year)
+table(MinnLand$yearF)
+boxplot(log(acrePrice)~yearF,data=MinnLand) 
+Modelap <- lm(log(acrePrice) ~ factor(year), data = MinnLand)
+summary(Modelap)
+par(mfrow = c(2, 2))
+plot(Modelap)
+```
+
+With the given data of the box plot and residual, all data points us to the conclusion that Minnesota did not see a decline in housing prices in 2007. Visually we can see that the data presented in the boxplot shows that 2007 there is an increase from 2006 to 2007. Though the Max is a little higher in 2006, the average is higher in 2007 for the housing prices.The residuals show that the baseline is 7.27 (intercept/baseline mean of log acre price) with the coefficients being added or subtracted depending on the year. For 2006 it adds .39392 and in 2007 it adds .47682. Not only was it a positive increase it 2007 increases by more than 2006 which mathematically shows us that Minnesota did not see a decline in housing prices from 2006 to 2007.I also want to add the Q-Q residual results I added also validate that a log function was a good indicator of positive growth since it follows a linear baseline on the plot, showing the model is reasonable.
+
+# Q2
+
+```{r Q2}
+data(MinnLand)
+MinnLand$yearF<-as.factor(MinnLand$year)
+M1<-lm(log(acrePrice)~year+region, data=MinnLand)
+summary(M1)
+M2<-lm(log(acrePrice)~year+region+year*region, data=MinnLand)
+summary(M2)
+plot(log(acrePrice)~year,data=MinnLand,type="n",ylim=c(4,10))
+years=sort(unique(MinnLand$year))
+regions=unique(MinnLand$region)
+
+for(i in 1:length(regions)){
+  newdata=MinnLand[MinnLand$region==regions[i],]
+  means=tapply(log(newdata$acrePrice),newdata$yearF,mean)
+  lines(means~years,col=i,lty=i,type="b")
+}
+legend("bottomright",col=(1:length(regions)),legend=regions,lty=1)
+anova(M1,M2)
+```
+
+M1 shows the model of data where the log acre price is assumed to be affected the same across all regions each year. M2 takes into account the different regions and factors this into their pricing each year. When compared to one another, M2 does a better job of showing the affects of the economic factors (housing crisis) since it takes into account more factors (region) than M1. This provides with lower coefficients/residuals to use to support our claims. Going one step further, with the data provided from the anova function we are given the RSS (Residual Sum of Squares). This shows us the difference of actual values vs the predicted values. M1 has an RSS of 4449.3 and M2 has and RSS of 4418. This shows us M2 is closer to the predictions, thus is a better fit/model for us to use. 
+
+(Also from the collaborate I want to note, M1 is a sub model of M2 thus it allows us to use anova for the comparison and data used above.)
+
+# Q3
+
+```{r Q3}
+data(salary)
+head(salary)
+tapply(salary$salary,salary$sex,mean)
+t.test(x=salary$salary[salary$sex=="Male"],y=salary$salary[salary$sex=="Female"],alternative = "greater")
+mod2<-lm(salary~sex,data=salary)
+summary(mod2)
+mod3<-lm(salary~sex+degree+rank+year+ysdeg,data=salary)
+mod4<-lm(salary~sex+degree+rank+year+ysdeg+sex*rank+sex*degree,data=salary)
+mod5<-lm(salary~.-sex,data=salary)
+mod6<-lm(salary~.-rank,data=salary)
+confint(mod3)
+anova(mod3,mod4)
+anova(mod3,mod5)
+anova(mod3,mod6)
+summary(mod3)
+table(salary$rank,salary$sex)
+```
+
+At a .05 we reject the hypothesis, our current T test is giving us .045 so we can say men make more than women (for the t test).At a .01 we fail to reject the null hypothesis. This means we need more/stronger proof of the pay relationship between sex and salary to validate the connection. 
+
+Mod 3 shows the best overall model since has all of the data we need and get the same results (sub model of Mod 4;Mod 4 is degree and rank. null is simple model is best. reject the null is to pick the bigger model. m3 and m4, there is no difference so we fail to reject and pic the smaller model which is model 3)
+anova (Mod 5, Mod 3) Shows us when we remove sex from the equation it increases the P-value.Having this higher P-value reduces the models fit to the problem. This indicts that sex is still a needed variable for the equation. 
+Mod 6 shows us that by removing rank the effect that sex has on the salary is more drastic, thus leading us to believe that rank might be more of an indicator of unequal pay than sex. 
+
+Using the information above we can create a table of male vs. female and their rank. This table comes back that there are significantly less women hired, and those who are hold lower ranks than men, thus assisting in explaining the pay gap. 42% of men are in higher paying ranks such as prof (16 out of 38). Meanwhile, 57% of women hold lower ranks such as Asst. Prof (8 out of 14). To compare both in higher paying roles, 42% (16 out of 38)of male faculty hold the rank of Professor, while only 29% (4 out of 14) of female faculty do, which means out of all profs 20% (4 out of 20) are women and 80% are men,
+
+The discrepancy of men vs. women and their respective ranks can be an institutional problem. This directly contributes to the "pay gap" as anyone in asst. pay would get paid less than a prof, but it happens that the majority are women.
+
+```{r Q4}
+data(Wool)
+str(Wool)
+Wool$load <- as.factor(Wool$load)
+modelwool <- aov(cycles ~ len + amp + load, data = Wool)
+tukey_load <- TukeyHSD(modelwool, "load")
+print(tukey_load)
+```
+
+Given the different loads and the adjusted P-value there is statistically no difference between 45-40 and 50-45 loads. However, there is a significance between 50-40 loads. As previously described in other problems, a P-value less than .05 at the 95% confidence level is significant. Thus, 50-40 P-value is .03778, which is less than .05 making it significant. It also statistically proves that yarn strength us lower at 50 loads than 40 loads. 
+
+Also to note, not all differences have the same amount of cycles integrated into them. Going off of this, it could be a good idea to add a WLS model to try to further clarify results. Otherwise, the results show that the more cycles the weaker the yarn becomes with the most significant drop occurring betwween 50 and 40 loads for this model. 
