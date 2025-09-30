@@ -1,0 +1,129 @@
+---
+title: "BUDA 525 HW5 v.4"
+author: "Valentina Tippy"
+date: "2025-09-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(alr4)
+library(caret)
+
+```
+
+# Q1
+
+Five fold 
+
+```{r Q1a}
+data(MinnLand)
+MinnLand2=na.omit(MinnLand)
+
+set.seed(616)
+training<-createDataPartition(MinnLand2$acrePrice,p=.75)$Resample1
+new_train<-MinnLand2[training,]
+new_test<-MinnLand2[-training,]
+                     
+tc5<-trainControl(method="cv",number=5)
+set.seed(616)
+
+m1_5<-train(log(acrePrice)  ~ region + factor(year) + crpPct + financing + log(acres),data=new_train,method="lmStepAIC",trControl=tc5)
+set.seed(616)
+m2_5<-train(sqrt(acrePrice) ~ region + factor(year) + crpPct + financing + log(acres),data=new_train,method="lmStepAIC",trControl=tc5)
+
+rmse_m1_5<- RMSE(predict(m1_5, newdata = new_test),  log(new_test$acrePrice))
+
+rmse_m2_5<- RMSE(predict(m2_5, newdata = new_test),  sqrt(new_test$acrePrice))
+
+print(rmse_m1_5)
+print(rmse_m2_5)
+```
+
+10 fold
+
+```{r Q1b}
+data(MinnLand)
+MinnLand2=na.omit(MinnLand)
+
+set.seed(616)
+training<-createDataPartition(MinnLand2$acrePrice,p=.75)$Resample1
+new_train<-MinnLand2[training,]
+new_test<-MinnLand2[-training,]
+
+tc10<-trainControl(method="cv",number=10)
+set.seed(616)
+
+m1_10<-train(log(acrePrice)  ~ region + factor(year) + crpPct + financing + log(acres),data=new_train,method="lmStepAIC",trControl=tc10)
+set.seed(616)
+m2_10<-train(sqrt(acrePrice) ~ region + factor(year) + crpPct + financing + log(acres),data=new_train,method="lmStepAIC",trControl=tc10)
+
+rmse_m1_10<- RMSE(predict(m1_10, newdata = new_test),  log(new_test$acrePrice))
+
+rmse_m2_10<- RMSE(predict(m2_10, newdata = new_test),  sqrt(new_test$acrePrice))
+
+print(rmse_m1_10)
+print(rmse_m2_10)
+
+                     
+
+```
+
+1000 random splitting 
+
+```{r Q1c}
+data(MinnLand)
+MinnLand2=na.omit(MinnLand)
+
+set.seed(616)
+training<-createDataPartition(MinnLand2$acrePrice,p=.75)$Resample1
+new_train<-MinnLand2[training,]
+new_test<-MinnLand2[-training,]
+        
+tclg<-trainControl(method = "repeatedcv", number = 10, repeats = 10)
+
+set.seed(616)
+m1_lg<-train(log(acrePrice)  ~ region + factor(year) + crpPct + financing + log(acres),data=new_train,method="lmStepAIC",trControl=tclg)
+set.seed(616)
+m2_lg<-train(sqrt(acrePrice) ~ region + factor(year) + crpPct + financing + log(acres),data=new_train,method="lmStepAIC",trControl=tclg)
+
+rmse_m1_lg<- RMSE(predict(m1_lg, newdata = new_test),  log(new_test$acrePrice))
+
+rmse_m2_lg<- RMSE(predict(m2_lg, newdata = new_test),  sqrt(new_test$acrePrice))
+
+print(rmse_m1_lg)
+print(rmse_m2_lg)
+```
+
+# Comments on the results 
+```{r Q1d}
+
+m1_5$results
+m1_10$results
+m1_lg$results
+
+m2_5$results
+m2_10$results
+m2_lg$results
+
+```
+
+Based on the information above 
+
+5-fold
+
+I would pick the first model, log function. It provides us with a lower rmse, which says that our predictions are close to the actual. the m1_5 (log) is .3346574 and m2_5(sqrt) , which provides us with an rmse (root mean squared error) of 8.954457 signifying that its prediction was far off from the actual. 
+
+10 fold
+
+Similar to 5 fold, the Log function works better for this (m1_10), due to the fact that the rmse is significantly lower for m1_10 at .33464967  than m2_10 at 8.95-162
+
+1000 Splitting 
+
+For the splitting one it does 10 sets of 100, creating a 1000 random entries to calculate from.Again, for this one the log function appears to work the best. m1_lg produces an rsme of .3344838 and m2_lg has an rsme of 8.948347. 
+
+Overview, 
+
+I think the best model for this would be m1_lg. A close second would be m1_5. Overall, M1_lg has the best numbers, as previously stated it has the lowest rsme. It also has the lowest mae (mean absolute error), which produces a prediction error of about 24.17% while m1_5 produces an mae of 24.18%. The log models  constantly returned more accurate numbers than the Square root products. 
+
+With Minnesota land prices specifically, also models show that the prices appreciate as the land ages. There are negatives in the models, thus the land is increasing in value. We have also determined this in previous homework, but are now seeing it from a different point of view. In addition, the log models are typically within 33% of the actual land prices of Minnesota
+
