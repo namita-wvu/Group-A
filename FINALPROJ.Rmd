@@ -1,0 +1,49 @@
+---
+title: "FINALPROJ"
+author: "Jordan Stott"
+date: "2025-10-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 4
+```{r q4} 
+library(carData)
+head(Salaries)
+
+tapply(Salaries$salary,Salaries$sex,mean)
+t.test(Salaries$salary[Salaries$sex=="Male"], Salaries$salary[Salaries$sex=="Female"], alternative="greater")
+
+all_factors <- lm(salary~sex+discipline+rank+yrs.service+yrs.since.phd,data=Salaries)
+
+no_sex <- lm(salary~.-sex,data=Salaries)
+anova(all_factors,no_sex)
+
+no_discipline <- lm(salary~.-discipline,data=Salaries)
+anova(all_factors,no_discipline)
+
+no_rank <- lm(salary~.-rank,data=Salaries)
+anova(all_factors,no_rank)
+
+no_yrs.service <- lm(salary~.-yrs.service,data=Salaries)
+anova(all_factors,no_yrs.service)
+
+no_yrs.since.phd <- lm(salary~.-yrs.since.phd,data=Salaries)
+anova(all_factors,no_yrs.since.phd)
+
+table(Salaries$rank,Salaries$sex)
+table(Salaries$discipline,Salaries$sex)
+```
+**Comments:**
+<br> Using the two sample t-test, the p-value of 0.001332 is below the 0.05 level, so we will reject the null hypothesis. Basing judgement on just gender, men make more than females. 
+<br> Influences of different factors: 
+<br> Sex: 0.2158 > 0.05 : NOT Significant
+<br> Discipline: 0.000000001878 < 0.05 : VERY Significant
+<br> Rank: 0.00000000000000022 < 0.05 : VERY Significant
+<br> Years of Service: 0.02143 < 0.05 : Significant
+<br> Years since Phd: 0.02698 < 0.05 : Significant
+<br> The raw data leads us to believe there is a large gender gap, consisting of men making roughly 14,088 more than women. After taking other factors into consideration and adjusting as needed, we see that rank and discipline are the two leading factors for salary, with years of service and years since phd following. The reasoning for the superstition of men making more than women is because there are more men in higher rank positions and disciplines. We are shown the significance of each factor above, and the tables shows how the sample of men used outranks the women, and the disciplines of each.
+<br> I don't think this is suitable to make salary offers because although it contains all of the surface variables, it leaves out things such as location, performance, grants, etc. In conclusion, the data is beneficial to sort through and make inferences from, but not meant to make offers from.
