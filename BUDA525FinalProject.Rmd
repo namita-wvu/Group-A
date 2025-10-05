@@ -1,0 +1,242 @@
+---
+title: " BUDA 525 Final Projeck"
+author: "Jordan, Ethan, Valentina, Namita"
+output: word_document
+---
+
+## Problem 2: Model Selections of BUDA 525
+
+1. **R-Squared**  
+   a. Provides a number from 0 to 1. The higher the number, the more the variability of the model is explained by the predictors. The more predictors you add, the higher the R2 will be. This model is best suited for simple linear regression models.
+
+2. **Anova (analysis of variance)**  
+   a. Compares linear models by using the Residual Sum of Squares (RSS) by adding predictors to improve the models. Typically used for deciding to accept or reject the (null) hypothesis. Also, allow us to see if the bigger model or the sub model is a better fit for our analysis. Not typically used for predictions.
+
+3. **AIC**  
+   a. Only requires a single model fit and incorporates computationally intense methods and data for small sample sizes. Different from ANOVA, which penalizes the model on how many predictors you add to it, so it's best to only test what you need and not everything. It also tests model quality to provide prediction accuracy. The lower the AIC, the better the model.
+
+4. **BIC**  
+   a. Only requires a single model fit and incorporates computationally intense methods and data for larger sample sizes than AIC. This model also penalizes for additional predictors, but is more intense than AIC due to the larger data sets it processes. For BIC, it is used more for interpretation than predictions. The lower the BIC, the better the model.
+
+5. **K-Fold Cross Validation**  
+   a. Splits the data into subsets where every data set is a validation set, while the rest is used as a training set. The model will repeat until each subset has been used as the test set. This validation method shows how well the model will perform on the new data given. Typically used for predictive modeling.
+
+6. **Random splitting**  
+   a. Combination of basic cross-validation and K-fold. Used the simplicity of the basic but the prediction of K-fold that the more sets will average out any bias. Randomly splits the data into training set and testing sets. In past homework’s we have split it into 25% testing and 75% training when running models. Typically better when using larger sets of data for prediction, but might be less accurate than K-fold since it does not use every point as training and testing.
+
+**Overview:**
+
+1. R-square and ANOVA are used for model fit and understanding statistical Significance.  
+   a. Out of the two, I would prefer ANOVA since you can have models, sub-models, and more predictors to demonstrate more statistical significance and improved results.
+
+2. AIC and BIC are used to factor the complexity/predictors of the model.  
+   a. For these two techniques, it really depends on what you are seeking. AIC is better for prediction, while BIC is better for simplicity and interpretation.
+
+3. K-fold and Random Splitting.  
+   a. K-fold would be the best choice of these two since it allows each piece of data to be training and testing, which provides more reliable/ accurate results. It might not be as suitable for bigger data sets, but it will still run.
+
+For the method of preference, it really depends on what you are looking to get out of the model. If we had to go with one model, K-fold cross-validation would be the most suitable. It can test and train the data we have to see how new data would react to it. We can get a preview of what we would be incorporating, which is more valuable than just predicting.
+
+---
+
+## 3a) Load data and quick scan
+
+```{r load, echo=TRUE, message=FALSE, warning=FALSE}
+library(ISLR)
+library(car)
+library(effects)
+data("Credit")
+str(Credit)
+summary(Credit)
+```
+
+**Takeaway:**  
+The data set has 400 records and 12 columns describing people’s credit information. A few numeric variables like Income, Limit, and Balance vary a lot and lean heavily to the right, meaning some people have much larger values than most others. The sample is split fairly evenly between men and women, and most observations are non-students.
+
+## 3b) Categorical comparisons
+
+```{r cats, echo=FALSE, fig.height=4, fig.width=7}
+par(mfrow=c(2,2), mar=c(4,4,2,1))
+boxplot(Balance~Student,  data=Credit, main="Balance by Student")
+boxplot(Balance~Ethnicity,data=Credit, main="Balance by Ethnicity")
+boxplot(Balance~Married,  data=Credit, main="Balance by Married")
+boxplot(Balance~Gender,   data=Credit, main="Balance by Gender")
+par(mfrow=c(1,1))
+```
+
+**Takeaway:**  
+Students tend to carry higher average balances, which fits the idea that people with lower or unstable income rely more on credit. The differences across Ethnicity, Married, and Gender are small, so they probably won’t help prediction and could introduce bias. We’ll focus on more meaningful numeric and behavioral factors instead.
+
+## 3c) Balance distribution
+
+```{r dist, echo=FALSE, fig.height=3.8, fig.width=7}
+par(mfrow=c(2,1), mar=c(4,4,2,1))
+hist(Credit$Balance, main="Distribution of Credit Balances", col="lightblue")
+plot(Credit$Balance, ylab="Balance", main="Balances by Observation")
+par(mfrow=c(1,1))
+```
+
+**Takeaway:**  
+The balance variable is very skewed many customers have a zero balance while a few have extremely high ones. This pattern can make it hard for a linear model to behave well, so we may need transformations or we might drop the zeros later to see if the model improves.
+
+## 3d) Full model and diagnostics
+
+```{r fullmods, echo=TRUE, fig.height=4.8, fig.width=7}
+mod_full <- lm(Balance ~ Income + Limit + Rating + Cards + Age + Education + Student + Married + Ethnicity + Gender, data=Credit)
+summary(mod_full)
+par(mfrow=c(2,2), mar=c(4,4,2,1))
+plot(mod_full)
+par(mfrow=c(1,1))
+```
+
+**Takeaway:**  
+Residual plots show clear curves and uneven spread, which means the plain linear model doesn’t capture the relationships correctly. A simple linear fit on raw balances isn’t appropriate yet.
+
+## 3e) Small positive offset + stepwise
+
+```{r step, echo=TRUE}
+Credit$adj_balance <- Credit$Balance + 1
+mod1      <- lm(adj_balance ~ Income + Limit + Rating + Cards + Age + Education + Student + Married + Ethnicity + Gender, data=Credit)
+mod1_step <- step(mod1, trace=0)
+summary(mod1_step)
+```
+
+**Takeaway:**  
+Backward AIC removes the weak or redundant predictors (Ethnicity, Education, Married, and Gender). The main drivers that remain are Income, Rating, Limit, Cards, Age, and Student. Lets use that result and implement them into the next model.
+
+## 3f) Transformation guidance
+
+```{r trans, echo=TRUE, fig.height=3.5, fig.width=6.5}
+mod2 <- lm(adj_balance ~ Income + Rating + Limit + Cards + Age + Student, data=Credit)
+boxCox(mod2)
+summary(powerTransform(cbind(Credit$adj_balance, Credit$Income, Credit$Rating, Credit$Limit, Credit$Cards, Credit$Age)))
+```
+
+**Takeaway:**  
+The Box-Cox test suggests that taking the square root of Balance would help stabilize the variance. The powerTransform results also hint that several predictors might benefit from square-root scaling. We’ll test those adjustments next to see if the model looks cleaner.
+
+## 3g) Transformed model on full data
+
+```{r mod3, echo=TRUE, fig.height=4.8, fig.width=7}
+mod3 <- lm(sqrt(adj_balance) ~ sqrt(Income) + sqrt(Rating) + sqrt(Limit) + sqrt(Cards) + Age + Student, data=Credit)
+summary(mod3)
+par(mfrow=c(2,2), mar=c(4,4,2,1)); plot(mod3); par(mfrow=c(1,1))
+```
+
+**Takeaway:**  
+The transformations make the residuals look smoother and more even, but there’s still a thin band of points near zero—probably caused by all the zero balances still in the data. That tells us it’s time to try removing them.
+
+## 3h) Remove zero balances and refit
+
+```{r clean, echo=TRUE}
+Credit$Balance[Credit$Balance == 0] <- NA
+Credit_clean <- na.omit(Credit)  # 310 rows remain
+nrow(Credit_clean)
+```
+
+```{r mod4, echo=TRUE, fig.height=4.8, fig.width=7}
+mod4 <- lm(Balance ~ Income + Rating + Limit + Cards + Age + Student, data=Credit_clean)
+summary(mod4)
+par(mfrow=c(2,2), mar=c(4,4,2,1)); plot(mod4); par(mfrow=c(1,1))
+```
+
+**Takeaway:**  
+After removing accounts with zero balances, the residual plots look much better—no clear pattern, nearly normal errors, and no strong outliers. The model now behaves the way we want, so this version becomes our main candidate.
+
+## 3i) Optional checks on clean data
+
+```{r bxpt, echo=TRUE, fig.height=3.4, fig.width=6.5}
+boxCox(mod4)
+# Use the cleaned data (no NAs) to avoid transformation errors
+summary(powerTransform(cbind(Credit_clean$Balance, Credit_clean$Income, Credit_clean$Rating, Credit_clean$Limit, Credit_clean$Cards, Credit_clean$Age)))
+```
+
+```{r mod5, echo=TRUE, fig.height=4.8, fig.width=7}
+mod5 <- lm(Balance ~ sqrt(Income) + sqrt(Rating) + sqrt(Limit) + sqrt(Cards) + Age + Student, data=Credit_clean)
+summary(mod5)
+par(mfrow=c(2,2), mar=c(4,4,2,1)); plot(mod5); par(mfrow=c(1,1))
+```
+
+**Takeaway:**  
+Box-Cox no longer recommends any change to the response once zeros are gone. Forcing square-root transforms on predictors adds a bit of curvature again, so the simpler untransformed model fits better and is easier to interpret.
+
+## 3j) 5-fold cross-validation: transformed vs clean
+
+```{r cv, echo=TRUE}
+set.seed(123)
+Credit_clean$fold_id <- sample(rep(1:5, length.out = nrow(Credit_clean)))
+RSS3 <- 0
+RSS4 <- 0
+for(k in 1:5){
+  test  <- which(Credit_clean$fold_id == k)
+  train <- setdiff(1:nrow(Credit_clean), test)
+  m3_cv <- lm(sqrt(adj_balance) ~ sqrt(Income) + sqrt(Rating) + sqrt(Limit) + sqrt(Cards) + Age + Student, data=Credit_clean[train,])
+  m4_cv <- lm(Balance ~ Income + Rating + Limit + Cards + Age + Student, data=Credit_clean[train,])
+  p3 <- predict(m3_cv, newdata=Credit_clean[test,])^2
+  p4 <- predict(m4_cv, newdata=Credit_clean[test,])
+  RSS3 <- RSS3 + sum((Credit_clean$adj_balance[test] - p3)^2)
+  RSS4 <- RSS4 + sum((Credit_clean$Balance[test] - p4)^2)
+}
+RSS3
+RSS4
+```
+
+**Takeaway:**  
+When we test both models with cross-validation, model4 that is using only positive balances performs much beter. Removing zeros produces more stable and accurate predictions than trying to adjust them mathematically by adding 1 to the balance variable.
+
+## 2k) Effect plots for the best model
+
+```{r effects, echo=FALSE}
+plot(allEffects(mod4))
+```
+
+**Takeaway:**  
+Balances go up when people have higher credit limits or more credit cards, and they’re typically higher for students. Balances go down for people with higher incomes, better credit ratings, and older age. These trends make sense and match real-world behavior.
+
+## 2L) Conclusions
+
+**Takeaway:**  
+Our final model, Balance ~ Income + Rating + Limit + Cards + Age + Student explains credit balances well for people who actually carry a balance. It avoids weak or sensitive variables like Gender and Ethnicity and keeps interpretation simple. In practice, this model would be useful for identifying which customers are likely to have larger outstanding balances and why, without over-complicating the analysis.
+
+---
+
+## Question 4
+
+```{r q4, echo=TRUE, message=FALSE, warning=FALSE}
+library(carData)
+head(Salaries)
+
+tapply(Salaries$salary,Salaries$sex,mean)
+t.test(Salaries$salary[Salaries$sex=="Male"], Salaries$salary[Salaries$sex=="Female"], alternative="greater")
+
+all_factors <- lm(salary~sex+discipline+rank+yrs.service+yrs.since.phd,data=Salaries)
+
+no_sex <- lm(salary~.-sex,data=Salaries)
+anova(all_factors,no_sex)
+
+no_discipline <- lm(salary~.-discipline,data=Salaries)
+anova(all_factors,no_discipline)
+
+no_rank <- lm(salary~.-rank,data=Salaries)
+anova(all_factors,no_rank)
+
+no_yrs.service <- lm(salary~.-yrs.service,data=Salaries)
+anova(all_factors,no_yrs.service)
+
+no_yrs.since.phd <- lm(salary~.-yrs.since.phd,data=Salaries)
+anova(all_factors,no_yrs.since.phd)
+
+table(Salaries$rank,Salaries$sex)
+table(Salaries$discipline,Salaries$sex)
+```
+
+**Comments:**  
+- Using the two sample t-test, the p-value of 0.001332 is below the 0.05 level, so we will reject the null hypothesis. Basing judgement on just gender, men make more than females.  
+- **Influences of different factors:**  
+  - Sex: 0.2158 > 0.05 : NOT Significant  
+  - Discipline: 0.000000001878 < 0.05 : VERY Significant  
+  - Rank: 0.00000000000000022 < 0.05 : VERY Significant  
+  - Years of Service: 0.02143 < 0.05 : Significant  
+  - Years since Phd: 0.02698 < 0.05 : Significant  
+- The raw data leads us to believe there is a large gender gap, consisting of men making roughly 14,088 more than women. After taking other factors into consideration and adjusting as needed, we see that rank and discipline are the two leading factors for salary, with years of service and years since phd following. The reasoning for the superstition of men making more than women is because there are more men in higher rank positions and disciplines. We are shown the significance of each factor above, and the tables shows how the sample of men used outranks the women, and the disciplines of each.  
+- I don't think this is suitable to make salary offers because although it contains all of the surface variables, it leaves out things such as location, performance, grants, etc. In conclusion, the data is beneficial to sort through and make inferences from, but not meant to make offers from.
