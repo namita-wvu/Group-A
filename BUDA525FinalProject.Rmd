@@ -1,43 +1,9 @@
 ---
-title: " BUDA 525 Final Projeck"
+title: " BUDA 525 Final Project"
 author: "Jordan, Ethan, Valentina, Namita"
 output: word_document
 ---
 
-## Problem 2: Model Selections of BUDA 525
-
-1. **R-Squared**  
-   a. Provides a number from 0 to 1. The higher the number, the more the variability of the model is explained by the predictors. The more predictors you add, the higher the R2 will be. This model is best suited for simple linear regression models.
-
-2. **Anova (analysis of variance)**  
-   a. Compares linear models by using the Residual Sum of Squares (RSS) by adding predictors to improve the models. Typically used for deciding to accept or reject the (null) hypothesis. Also, allow us to see if the bigger model or the sub model is a better fit for our analysis. Not typically used for predictions.
-
-3. **AIC**  
-   a. Only requires a single model fit and incorporates computationally intense methods and data for small sample sizes. Different from ANOVA, which penalizes the model on how many predictors you add to it, so it's best to only test what you need and not everything. It also tests model quality to provide prediction accuracy. The lower the AIC, the better the model.
-
-4. **BIC**  
-   a. Only requires a single model fit and incorporates computationally intense methods and data for larger sample sizes than AIC. This model also penalizes for additional predictors, but is more intense than AIC due to the larger data sets it processes. For BIC, it is used more for interpretation than predictions. The lower the BIC, the better the model.
-
-5. **K-Fold Cross Validation**  
-   a. Splits the data into subsets where every data set is a validation set, while the rest is used as a training set. The model will repeat until each subset has been used as the test set. This validation method shows how well the model will perform on the new data given. Typically used for predictive modeling.
-
-6. **Random splitting**  
-   a. Combination of basic cross-validation and K-fold. Used the simplicity of the basic but the prediction of K-fold that the more sets will average out any bias. Randomly splits the data into training set and testing sets. In past homework’s we have split it into 25% testing and 75% training when running models. Typically better when using larger sets of data for prediction, but might be less accurate than K-fold since it does not use every point as training and testing.
-
-**Overview:**
-
-1. R-square and ANOVA are used for model fit and understanding statistical Significance.  
-   a. Out of the two, I would prefer ANOVA since you can have models, sub-models, and more predictors to demonstrate more statistical significance and improved results.
-
-2. AIC and BIC are used to factor the complexity/predictors of the model.  
-   a. For these two techniques, it really depends on what you are seeking. AIC is better for prediction, while BIC is better for simplicity and interpretation.
-
-3. K-fold and Random Splitting.  
-   a. K-fold would be the best choice of these two since it allows each piece of data to be training and testing, which provides more reliable/ accurate results. It might not be as suitable for bigger data sets, but it will still run.
-
-For the method of preference, it really depends on what you are looking to get out of the model. If we had to go with one model, K-fold cross-validation would be the most suitable. It can test and train the data we have to see how new data would react to it. We can get a preview of what we would be incorporating, which is more valuable than just predicting.
-
----
 
 ## 3a) Load data and quick scan
 
